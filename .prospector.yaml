@@ -1,0 +1,16 @@
+test-warnings: true
+strictness: veryhigh
+
+ignore-paths:
+  - .venv
+  - README.md
+  - .cache
+  - .benchmarks
+
+pylint:
+  disable:
+    - unused-argument
+    - too-few-public-methods
+    - too-many-arguments
+    - too-many-ancestors
+    - arguments-differ
