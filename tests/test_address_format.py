@@ -90,7 +90,7 @@ def test_dot_after_word():
 
 def test_check_start_with_type():
     assert check_start_with_type('', ['1']) is False
-    assert check_start_with_type('', []) is True
+    assert check_start_with_type('', []) is False
 
     assert check_start_with_type('1', []) is True
     assert check_start_with_type('a', []) is True
@@ -111,6 +111,8 @@ def test_check_start_with_type():
     assert check_start_with_type('пр 1-я', ['ая']) is True
     assert check_start_with_type('пр 1-ая', ['ая']) is True
     assert check_start_with_type('1-ый пр.', ['ый']) is True
+
+    assert check_start_with_type('первая вторая', ['ая']) is False
 
 
 def test_check_portion_incorrect_args():
@@ -241,8 +243,8 @@ def test_all_formats():
             "section": "6", "building": "7",
         }, {
             "plain_address": "",
-            "ownership_number": "45",
-            "building_type": "2",
+            "premise_number": "45",
+            "building_type": 2,
         },
         'all',
         'Курганская\xa0обл., Катайский\xa0р\u2060-\u2060н, г.\xa0Серов, Кировский\xa0окр., с.\xa0Дрянное, ул.\xa0Майская, д.\xa05, корп.\xa06, стр.\xa07, м.\xa045'  # noqa
@@ -258,8 +260,8 @@ def test_all_formats():
             "section": None, "building": "7"
         }, {
             "plain_address": "",
-            "ownership_number": "45",
-            "building_type": "2",
+            "premise_number": "45",
+            "building_type": 2,
         },
         'all',
         'г.\xa0Калач\u2060-\u2060на\u2060-\u2060Дону, с.\xa0им.\xa0В.\xa0В.\xa0Петрова, д.\xa05, стр.\xa07, м.\xa045'  # noqa
@@ -275,8 +277,8 @@ def test_all_formats():
             "section": None, "building": None
         }, {
             "plain_address": "",
-            "ownership_number": "45",
-            "building_type": "4",
+            "premise_number": "45",
+            "building_type": 4,
         },
         'starting_with_street',
         'Апрельский\xa0б\u2060-\u2060р, д.\xa0543, м.\xa045'
@@ -292,8 +294,8 @@ def test_all_formats():
             "section": None, "building": None
         }, {
             "plain_address": "",
-            "ownership_number": "45",
-            "building_type": "1",
+            "premise_number": "45",
+            "building_type": 1,
         },
         'finishing_with_village',
         'Пермский\xa0кр., с\u2060/\u2060п\xa0Грелово'
@@ -309,8 +311,8 @@ def test_all_formats():
             "section": None, "building": None
         }, {
             "plain_address": "",
-            "ownership_number": "45",
-            "building_type": "4",
+            "premise_number": "45",
+            "building_type": 4,
         },
         'street_only',
         '5\u2060-\u2060я\xa0лин.'
@@ -326,8 +328,8 @@ def test_all_formats():
             "section": None, "building": None
         }, {
             "plain_address": "г Москва, ул Кривая",
-            "ownership_number": "45",
-            "building_type": "4",
+            "premise_number": "45",
+            "building_type": 4,
         },
         'street_only',
         'г Москва, ул Кривая'
@@ -337,3 +339,19 @@ def test_all_formats_testcases(testcase):
     address_components, kwargs, mode, result_address = testcase
     result = all_formats(address_components=address_components, **kwargs)
     assert result[mode] == result_address
+
+
+@pytest.mark.parametrize("format_args", (
+    (None, None, None),
+    ({}, None, None),
+))
+def test_all_formats_invalid_input(format_args: tuple):
+    plain_address = "plain_address"
+    result = all_formats(plain_address, *format_args)
+    assert result == {
+            'all': plain_address,
+            'street_only': plain_address,
+            'finishing_with_village': plain_address,
+            'starting_with_street': plain_address,
+            'finishing_with_street': plain_address,
+        }

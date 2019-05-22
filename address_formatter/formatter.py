@@ -200,41 +200,46 @@ def dot_after_word(value: str) -> str:
     return value
 
 
-def check_start_with_type(value: str, suffix_set: list) -> bool:  # noqa
+def check_numeral_suffix(word, suffix_set):
+    numeral_suffix = next((
+        suffix for suffix in suffix_set
+        if word.endswith(f'-{suffix}') or word.endswith(f'-{suffix[-1]}')
+     ), None)
+
+    if numeral_suffix is not None:
+        word_without_suffix = word[:-len(numeral_suffix) - 1]
+        if not RE_NONDIGITS.search(word_without_suffix):
+            return False
+
+    return True
+
+
+def check_start_with_type(value: str, suffix_set: list) -> bool:
     """ Стартовать ли порцию адреса с типа адреса
     Например:
         1-я квартира
         квартира 1
     """
+    if not value:
+        return False
+
+    if not suffix_set:
+        return True
+
     for word in value.split(' '):
-        if not RE_NONDIGITS.search(word) and suffix_set:
+        if not RE_NONDIGITS.search(word):
             continue
 
-        to_break = True
-        numeral_suffix = None
+        if not check_numeral_suffix(word, suffix_set):
+            continue
 
-        for suffix in suffix_set:
-            if word.endswith(f'-{suffix}') or word.endswith(f'-{suffix[-1]}'):
-                numeral_suffix = suffix
-                break
+        # Конструкция найдет первый нужный элемент, либо вернет None
+        suff = next((suff for suff in suffix_set if word.endswith(suff)), None)
 
-        if numeral_suffix is not None:
-            word_without_suffix = word[:-len(numeral_suffix) - 1]
-            if not RE_NONDIGITS.search(word_without_suffix):
-                to_break = False
+        if suff is not None:
+            continue
 
-        if to_break:
-            suff = None
-            for suffix in suffix_set:
-                if word.endswith(suffix):
-                    suff = suffix
-                    break
-
-            if suff is not None:
-                to_break = False
-
-        if to_break:
-            return True
+        return True
 
     return False
 
@@ -299,13 +304,23 @@ def format_result(portions: list) -> str:
     return ", ".join(unique_justseen(clean_porions))
 
 
-def all_formats(plain_address: str, address_components: dict,  # noqa
-                ownership_number: str, building_type: str):
+def all_formats(plain_address: str, address_components: Optional[dict],  # noqa
+                premise_number: str, building_type: int):
     data = address_components
+
+    if not data:
+        return {
+            'all': plain_address,
+            'street_only': plain_address,
+            'finishing_with_village': plain_address,
+            'starting_with_street': plain_address,
+            'finishing_with_street': plain_address,
+        }
 
     section_type = "корпус"
     construction_type = "строение"
-    ownership_type = "место" if building_type in ["2", "4"] else "квартира"
+    # 2, 4 -> гараж или паркинг
+    ownership_type = "место" if building_type in [2, 4] else "квартира"
 
     region = check_portion(data, AddressComponent.REGION)
     district = check_portion(data, AddressComponent.DISTRICT)
@@ -319,7 +334,7 @@ def all_formats(plain_address: str, address_components: dict,  # noqa
     construction = check_portion(data, AddressComponent.CONSTRUCTION,
                                  component_type=construction_type)
     ownership = check_portion(data, AddressComponent.OWNERSHIP,
-                              value=ownership_number,
+                              value=premise_number,
                               component_type=ownership_type)
 
     return {
