@@ -1,0 +1,85 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: quay.io/pik-software/base-django:latest
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          name: Restore Python dependencies
+          keys:
+            - v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            - v1-dependencies-master-{{ checksum "requirements.txt" }}
+
+      - run:
+          name: Install Python dependencies
+          command: |
+            python -m venv .venv
+            . .venv/bin/activate
+            pip install --upgrade pip
+            pip install --upgrade setuptools
+            pip install -r requirements.txt
+
+      - save_cache:
+          name: Cache Python dependencies
+          key: v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          paths:
+            - ./.venv
+
+      - run:
+          name: PIP Check
+          command: |
+            . .venv/bin/activate
+            pip check
+
+      - run:
+          name: Checksum Prospector
+          command: |
+            . .venv/bin/activate
+            if [[ "${CIRCLE_BRANCH}" != "master" && "${CIRCLE_BRANCH}" != "stage" ]]; then
+              find -type f -iname '*.py' ! -path '*tests*' ! -path '*\.cache*' ! -path '*.benchmarks*' ! -path '*docs*' ! -path '\./\.venv*' -print0 | sort -z | xargs -r0 cat | sha256sum | cut -f1 -d" " > prospector.sum
+            fi
+
+      - restore_cache:
+          name: Restore Prospector
+          keys:
+            - v1-prospector-{{ .Branch }}-{{ checksum "prospector.sum" }}
+            - v1-prospector-dev-{{ checksum "prospector.sum" }}
+
+      - run:
+          name: Run prospector
+          command: |
+            . .venv/bin/activate
+            set -x
+            if [[ "${CIRCLE_BRANCH}" != "master" && "${CIRCLE_BRANCH}" != "stage" ]]; then
+              if [ ! -e prospector.cache ]; then
+                  if [ "${CIRCLE_BRANCH}" == "dev" ]; then
+                    prospector -s veryhigh .
+                  else
+                    set +o pipefail && git diff --name-only --diff-filter=ACM origin/dev.. | grep -P '^(?!\.venv|.*tests).*\.py$' | sort -z | sed -e '$ s/.$//' | xargs -r prospector -s veryhigh -M
+                  fi
+              fi
+              touch prospector.cache
+            fi
+
+      - save_cache:
+          name: Cache Prospector
+          key: v1-prospector-{{ .Branch }}-{{ checksum "prospector.sum" }}
+          paths:
+            - ./prospector.cache
+
+      - run:
+          name: Run Pytests
+          command: |
+            . .venv/bin/activate
+            pytest --cov-config .coveragerc --cov-report term-missing --durations=0 --cov . -vvv
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build

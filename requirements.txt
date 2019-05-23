@@ -1,0 +1,6 @@
+more_itertools>=7.0.0
+pytest-xdist
+pytest
+pytest-cov
+pytest-benchmark
+prospector
