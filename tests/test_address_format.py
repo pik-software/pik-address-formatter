@@ -220,12 +220,21 @@ def test_all_formats():
         'city_district_type_full': 'район'
     }
 
-    result = all_formats("plain_address", test_address_components, "1", "1")
+    result = all_formats("plain_address", test_address_components, "1", 1)
     assert result == {
         'all': f'Брянская{NBSPACE}обл., г.{NBSPACE}Брянск, Бежицкий{NBSPACE}р{NBHYPHEN}н, д.{NBSPACE}9, кв.{NBSPACE}1',  # noqa
         'street_only': 'plain_address',
         'finishing_with_village': f'Брянская{NBSPACE}обл., г.{NBSPACE}Брянск, Бежицкий{NBSPACE}р{NBHYPHEN}н',  # noqa
         'starting_with_street': f'д.{NBSPACE}9, кв.{NBSPACE}1',
+        'finishing_with_street': f'Брянская{NBSPACE}обл., г.{NBSPACE}Брянск, Бежицкий{NBSPACE}р{NBHYPHEN}н',  # noqa
+    }
+
+    result = all_formats("plain_address", test_address_components, None, None)
+    assert result == {
+        'all': f'Брянская{NBSPACE}обл., г.{NBSPACE}Брянск, Бежицкий{NBSPACE}р{NBHYPHEN}н, д.{NBSPACE}9',  # noqa
+        'street_only': 'plain_address',
+        'finishing_with_village': f'Брянская{NBSPACE}обл., г.{NBSPACE}Брянск, Бежицкий{NBSPACE}р{NBHYPHEN}н',  # noqa
+        'starting_with_street': f'д.{NBSPACE}9',
         'finishing_with_street': f'Брянская{NBSPACE}обл., г.{NBSPACE}Брянск, Бежицкий{NBSPACE}р{NBHYPHEN}н',  # noqa
     }
 

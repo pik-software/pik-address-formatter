@@ -305,7 +305,34 @@ def format_result(portions: list) -> str:
 
 
 def all_formats(plain_address: str, address_components: Optional[dict],  # noqa
-                premise_number: str, building_type: int):
+                premise_number: str = None, building_type: int = None):
+    """ Address formatter on address components from housing building
+
+    :param plain_address: default address if failed to build address
+    :param address_components: dict of address_components
+    :param premise_number: premise number
+    :param building_type: type of building, 2 or 4 for garage or parking
+    :return: dict of address formats
+        all - full address with region, district, city, township, etc
+        street_only - street or village
+        finishing_with_village - region, district, city, township and village
+        starting_with_street - street, building, section, construction, premise
+        finishing_with_street - region, district, city, township, village, street
+
+        >>> address_components = {
+            "region": "Курганская", "region_type_full": "область",
+            "area": "Катайский", "area_type_full": "район",
+            "city": "Серов", "city_type_full": "город",
+            "city_district": "Кировский", "city_district_type_full": "округ",
+            "settlement": "Дрянное", "settlement_type_full": "село",
+            "street": "Майская", "street_type_full": "улица",
+            "house": "5", "house_type_full": "дом",
+            "section": "6", "building": "7",
+        }
+        >>> all_formats("plain address ", address_components, "5", 7)['all']
+        Курганская обл., Катайский р⁠-⁠н, г. Серов, Кировский окр.,
+        с. Дрянное, ул. Майская, д. 5, корп. 6, стр. 7, м. 45
+    """
     data = address_components
 
     if not data:
@@ -319,7 +346,7 @@ def all_formats(plain_address: str, address_components: Optional[dict],  # noqa
 
     section_type = "корпус"
     construction_type = "строение"
-    # 2, 4 -> гараж или паркинг
+    # 2, 4 -> garage or parking
     ownership_type = "место" if building_type in [2, 4] else "квартира"
 
     region = check_portion(data, AddressComponent.REGION)
