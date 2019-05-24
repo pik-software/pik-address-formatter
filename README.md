@@ -19,11 +19,20 @@ print(all_formats("plain address ", address_components, "5", 7)['all'])
 ```
 Курганская обл., Катайский р⁠-⁠н, г. Серов, Кировский окр., с. Дрянное, ул. Майская, д. 5, корп. 6, стр. 7, м. 45
 
+```text
+    all_formats return dict of address formats
+        all - full address with region, district, city, township, etc
+        street_only - street or village
+        finishing_with_village - region, district, city, township and village
+        starting_with_street - street, building, section, construction, premise
+        finishing_with_street - region, district, city, township, village, street
+```
+
 ## HowToUse ##
 
 * Add pik-address-formatter to requirements.txt
 ```
-git+https://github.com/pik-software/pik-address-formatter.git@v0.1#egg=pik-address-formatter==0.1
+git+ssh://git@github.com/pik-software/pik-address-formatter.git@v0.1#egg=pik-address-formatter==0.1
 ```
 
 * Add address_formats method to target model
