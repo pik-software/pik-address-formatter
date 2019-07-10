@@ -18,7 +18,7 @@ with codec_open(path.join(HERE_PATH, 'requirements.txt'),
 
 setup(
     name='pik-address-formatter',
-    version='0.1',
+    version='0.2',
     description='Address formatter for address components from housing',
     # https://packaging.python.org/specifications/core-metadata/#description-optional
     long_description=LONG_DESCRIPTION,
