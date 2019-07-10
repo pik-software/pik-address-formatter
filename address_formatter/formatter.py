@@ -364,6 +364,8 @@ def all_formats(plain_address: str, address_components: Optional[dict],  # noqa
                               value=premise_number,
                               component_type=ownership_type)
 
+    data_street = data.get('street')
+
     return {
         'all': format_result([
             region,
@@ -378,17 +380,17 @@ def all_formats(plain_address: str, address_components: Optional[dict],  # noqa
             ownership,
         ]) or plain_address,
         'street_only': format_result([
-            street if data['street'] is not None else village,
+            street if data_street is not None else village,
         ]) or plain_address,
         'finishing_with_village': format_result([
             region,
             district,
             city,
             township,
-        ] + ([village] if data['street'] is not None else [])
+        ] + ([village] if data_street is not None else [])
         ) or plain_address,
         'starting_with_street': format_result(
-            ([village] if data['street'] is None else []) + [
+            ([village] if data_street is None else []) + [
                 street,
                 building,
                 section,
