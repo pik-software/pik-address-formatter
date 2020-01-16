@@ -358,9 +358,9 @@ def test_all_formats_invalid_input(format_args: tuple):
     plain_address = "plain_address"
     result = all_formats(plain_address, *format_args)
     assert result == {
-            'all': plain_address,
-            'street_only': plain_address,
-            'finishing_with_village': plain_address,
-            'starting_with_street': plain_address,
-            'finishing_with_street': plain_address,
-        }
+        'all': plain_address,
+        'street_only': plain_address,
+        'finishing_with_village': plain_address,
+        'starting_with_street': plain_address,
+        'finishing_with_street': plain_address,
+    }

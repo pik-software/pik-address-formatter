@@ -1,16 +1,23 @@
+
 test-warnings: true
 strictness: veryhigh
 
 ignore-paths:
+  - docs
+  - migrations
   - .venv
+  - _project_/settings_local.py
   - README.md
   - .cache
   - .benchmarks
+  - __data__
 
 pylint:
+  options:
+    jobs: 8
   disable:
     - unused-argument
     - too-few-public-methods
     - too-many-arguments
     - too-many-ancestors
-    - arguments-differ
+    - redefined-outer-name

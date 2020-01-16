@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: quay.io/pik-software/base-django:latest
+      - image: quay.io/pik-software/base-django:3.7
 
     working_directory: ~/repo
 
@@ -12,21 +12,18 @@ jobs:
       - restore_cache:
           name: Restore Python dependencies
           keys:
-            - v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
-            - v1-dependencies-master-{{ checksum "requirements.txt" }}
+            - v1-dependencies-{{ .Branch }}-{{ checksum "requirements.dev.txt" }}
 
       - run:
           name: Install Python dependencies
           command: |
             python -m venv .venv
             . .venv/bin/activate
-            pip install --upgrade pip
-            pip install --upgrade setuptools
-            pip install -r requirements.txt
+            pip install -r requirements.dev.txt
 
       - save_cache:
           name: Cache Python dependencies
-          key: v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          key: v1-dependencies-{{ .Branch }}-{{ checksum "requirements.dev.txt" }}
           paths:
             - ./.venv
 
@@ -48,7 +45,6 @@ jobs:
           name: Restore Prospector
           keys:
             - v1-prospector-{{ .Branch }}-{{ checksum "prospector.sum" }}
-            - v1-prospector-dev-{{ checksum "prospector.sum" }}
 
       - run:
           name: Run prospector
@@ -57,11 +53,7 @@ jobs:
             set -x
             if [[ "${CIRCLE_BRANCH}" != "master" && "${CIRCLE_BRANCH}" != "stage" ]]; then
               if [ ! -e prospector.cache ]; then
-                  if [ "${CIRCLE_BRANCH}" == "dev" ]; then
-                    prospector -s veryhigh .
-                  else
-                    set +o pipefail && git diff --name-only --diff-filter=ACM origin/dev.. | grep -P '^(?!\.venv|.*tests).*\.py$' | sort -z | sed -e '$ s/.$//' | xargs -r prospector -s veryhigh -M
-                  fi
+                  prospector .
               fi
               touch prospector.cache
             fi
@@ -78,8 +70,36 @@ jobs:
             . .venv/bin/activate
             pytest --cov-config .coveragerc --cov-report term-missing --durations=0 --cov . -vvv
 
+  deploy-pypi:
+    machine:
+      enabled: true
+    steps:
+    - checkout
+    - deploy:
+        name: Deploy to PyPI
+        command: |
+          ./.circleci/deploy-to-pypi.sh
+
 workflows:
   version: 2
   build_and_deploy:
     jobs:
       - build
+      - hold:
+          type: approval
+          requires:
+            - build
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
+      - deploy-pypi:
+          requires:
+            - build
+            - hold
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/

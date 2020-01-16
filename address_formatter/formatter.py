@@ -1,7 +1,7 @@
+import operator
 import re
+from itertools import groupby
 from typing import Optional, Union
-
-from more_itertools import unique_justseen
 
 __all__ = [
     'all_formats',
@@ -21,6 +21,18 @@ NBHYPHEN = '\u2060-\u2060'
 NBSLASH = '\u2060/\u2060'
 
 IS_ERROR = object()
+
+
+def unique_justseen(iterable, key=None):
+    """Yields elements in order, ignoring serial duplicates
+
+        >>> list(unique_justseen('AAAABBBCCDAABBB'))
+        ['A', 'B', 'C', 'D', 'A', 'B']
+        >>> list(unique_justseen('ABBCcAD', str.lower))
+        ['A', 'B', 'C', 'A', 'D']
+
+    """
+    return map(next, map(operator.itemgetter(1), groupby(iterable, key)))
 
 
 class AdjectiveSuffixSet:
@@ -204,7 +216,7 @@ def check_numeral_suffix(word, suffix_set):
     numeral_suffix = next((
         suffix for suffix in suffix_set
         if word.endswith(f'-{suffix}') or word.endswith(f'-{suffix[-1]}')
-     ), None)
+    ), None)
 
     if numeral_suffix is not None:
         word_without_suffix = word[:-len(numeral_suffix) - 1]
@@ -317,7 +329,8 @@ def all_formats(plain_address: str, address_components: Optional[dict],  # noqa
         street_only - street or village
         finishing_with_village - region, district, city, township and village
         starting_with_street - street, building, section, construction, premise
-        finishing_with_street - region, district, city, township, village, street
+        finishing_with_street - region, district, city,
+            township, village, street
 
         >>> address_components = {
             "region": "Курганская", "region_type_full": "область",
