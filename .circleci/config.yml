@@ -70,36 +70,8 @@ jobs:
             . .venv/bin/activate
             pytest --cov-config .coveragerc --cov-report term-missing --durations=0 --cov . -vvv
 
-  deploy-pypi:
-    machine:
-      enabled: true
-    steps:
-    - checkout
-    - deploy:
-        name: Deploy to PyPI
-        command: |
-          ./.circleci/deploy-to-pypi.sh
-
 workflows:
   version: 2
   build_and_deploy:
     jobs:
       - build
-      - hold:
-          type: approval
-          requires:
-            - build
-          filters:
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*/
-            branches:
-              ignore: /.*/
-      - deploy-pypi:
-          requires:
-            - build
-            - hold
-          filters:
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*/
-            branches:
-              ignore: /.*/
