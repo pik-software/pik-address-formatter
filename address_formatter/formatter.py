@@ -87,6 +87,7 @@ TYPES = {
     },
 
     AddressComponent.DISTRICT: {
+        "город": {"suffix_set": AdjectiveSuffixSet.EMPTY, "abbreviation": "г"},
         "поселение": {"suffix_set": AdjectiveSuffixSet.EMPTY,
                       "abbreviation": "пос"},
         "район": {"suffix_set": AdjectiveSuffixSet.MASCULINE,

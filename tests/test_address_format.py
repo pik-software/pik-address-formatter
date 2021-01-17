@@ -342,7 +342,29 @@ def test_all_formats():
         },
         'street_only',
         'г Москва, ул Кривая'
-    ),
+    ), (
+        {
+            "region": "Московская",
+            "region_type": "обл",
+            "region_type_full": "область",
+            "locality": "Наро-Фоминск",
+            "locality_type": "г",
+            "locality_type_full": "город",
+            "city": "Наро-Фоминск",
+            "city_type": "г",
+            "city_type_full": "город",
+            "settlement": "Мякишево",
+            "settlement_type": "д",
+            "settlement_type_full": "деревня",
+            "area": "Наро-Фоминск",
+            "area_type": "г",
+            "area_type_full": "город"
+        }, {
+            "plain_address": "",
+        },
+        'all',
+        'Московская\xa0обл., г.\xa0Наро\u2060-\u2060Фоминск, д.\xa0Мякишево'
+    )
 ))
 def test_all_formats_testcases(testcase):
     address_components, kwargs, mode, result_address = testcase
