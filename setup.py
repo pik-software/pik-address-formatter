@@ -9,7 +9,7 @@ with open(path.join(HERE_PATH, 'README.md')) as readme_fd:
 
 setup(
     name='pik-address-formatter',
-    version='1.0',
+    version='1.1',
     author='pik-software',
     author_email='no-reply@pik-software.ru',
     description='Address formatter for address components from housing',
