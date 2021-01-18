@@ -32,7 +32,7 @@ print(all_formats("plain address ", address_components, "5", 7)['all'])
 
 * Add pik-address-formatter to requirements.txt
 ```
-git+ssh://git@github.com/pik-software/pik-address-formatter.git@v0.1#egg=pik-address-formatter==0.1
+pik-address-formatter>=1.0,<2.0
 ```
 
 * Add address_formats method to target model
